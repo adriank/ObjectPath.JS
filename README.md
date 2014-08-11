@@ -1,4 +1,4 @@
 ObjectPath.JS
 =============
 
-JavaScritp implementation of ObjectPath
+JavaScritpt implementation of [ObjectPath](http://adriank.github.io/ObjectPath)
