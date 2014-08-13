@@ -1,0 +1,13 @@
+{
+	"name": "objectpath",
+	"version": "0.1",
+	"main": "objectpath.js",
+	"keywords": [
+		"JSON",
+		"tree",
+		"object"
+	],
+	"ignore" : [
+		"test.js"
+	]
+}
