@@ -45,7 +45,7 @@ if (!Array.prototype.indexOf) {
 }
 
 String.prototype.tokens=function(D){
-		var log=console.log
+		var clog=console.log
 		D=D?D:false
     var c;                      // The current character.
     var from;                   // The index of the start of the token.
@@ -60,6 +60,7 @@ String.prototype.tokens=function(D){
 		var prefix = '<>.';
 		var operators='+-*/%<>'+'[,]'+'{}:'+'()'
 		var root='$'
+		var context='!'
 		var current='@'
 		var wildcard="*" //probalby will be treated as op
 		var wordOperators=["and","or","not","in","not in","is","is not",""]
@@ -303,6 +304,8 @@ String.prototype.tokens=function(D){
 	            result.push(make('(root)', c));
 						else if (c===current)
 	            result.push(make('(current)', c));
+						else if (c===context)
+	            result.push(make('(context)', c));
 						else if (operators.indexOf(c) >= 0)
 	            result.push(make('op', c));
 						else
@@ -310,7 +313,7 @@ String.prototype.tokens=function(D){
             c = this.charAt(i);
         }
     }
-		if (D) log("}tokens with",result)
+		if (D) clog("}tokens with",result)
     return result;
 };
 //D=true

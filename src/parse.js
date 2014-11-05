@@ -12,7 +12,7 @@
 var makeTree= function () {
 	var D=false
 	if (this)
-		var D=this.D
+		D=this.D
 	var symbol_table = {};
 	var token;
 	var tokens;
@@ -27,7 +27,7 @@ var makeTree= function () {
 
 	var advance = function (id) {
 		var a, o, t, v;
-		if (D) log("{fn:advance("+(typeof(id)!=='undefined'?id:"")+")")
+		if (D) console.log("{fn:advance("+(typeof(id)!=='undefined'?id:"")+")")
 		if (id && token.id !== id) {
 			token.error("Expected '" + id + "', got '"+token.id+"'.");
 		}
@@ -39,7 +39,7 @@ var makeTree= function () {
 		token_nr += 1;
 		v = t.value;
 		a = t.type;
-		if (D) log("token",v,"type: ",a)
+		if (D) console.log("token",v,"type: ",a)
 		if (a === "name") {
 			if (FALSE.indexOf(v.toLowerCase())>=0) v="false"
 			if (TRUE.indexOf(v.toLowerCase())>=0) v="true"
@@ -52,14 +52,16 @@ var makeTree= function () {
 			o=symbol_table["(root)"]
 		} else if (a === "(current)") {
 			o=symbol_table["(current)"]
+		} else if (a === "(context)") {
+			o=symbol_table["(context)"]
 		} else if (a === "op") {
-			if (D) log("operator",v,"found")
+			if (D) console.log("operator",v,"found")
 			o = symbol_table[v];
 			if (!o) {
 				t.error("Unknown operator.");
 			}
 		} else if (a === "str" || a === "number") {
-			if (D) log(a,v," found")
+			if (D) console.log(a,v," found")
 			o = symbol_table["(literal)"];
 			a = "literal";
 		} else {
@@ -70,33 +72,33 @@ var makeTree= function () {
 		token.value = v;
 		token.arity = a;
 		token.error = function(e){console.error(e)}
-		if (D) log("}fn:advance() returning token: ",token)
+		if (D) console.log("}fn:advance() returning token: ",token)
 		return token;
 	};
 
 	var expression = function (rbp) {
-		if (D) log("{fn:expression("+(typeof(rbp)!=='undefined'?rbp:"")+")")
+		if (D) console.log("{fn:expression("+(typeof(rbp)!=='undefined'?rbp:"")+")")
 		var left;
 		var t = token;
 		rbp=typeof rbp==="undefined"?0:rbp
 		advance();
-		if (D) log("token is",t)
+		if (D) console.log("token is",t)
 		left = t.nud();
-		if (D) log("left is: ",left)
-		if (D) log("while",rbp,"<",token.lbp)
+		if (D) console.log("left is: ",left)
+		if (D) console.log("while",rbp,"<",token.lbp)
 		while (rbp < token.lbp) {
-			if (D) log("in while loop token:",token)
+			if (D) console.log("in while loop token:",token)
 			t = token;
 			advance();
 			left = t.led(left);
-			if (D) log("left is ",left)
+			if (D) console.log("left is ",left)
 		}
-		if (D) log("}fn:expression() returning token: ",left)
+		if (D) console.log("}fn:expression() returning token: ",left)
 		return left;
 	};
 
 	var block = function () {
-		if (D) log("fn:block()")
+		if (D) console.log("fn:block()")
 		var t = token;
 		advance("{");
 		return t.std();
@@ -112,7 +114,7 @@ var makeTree= function () {
 	};
 
 	var symbol = function (id, bp) {
-		//if (D) log("{fn:symbol("+id,", "+bp+")")
+		//if (D) console.log("{fn:symbol("+id,", "+bp+")")
 		var s = symbol_table[id];
 		bp = bp || 0;
 		if (s) {
@@ -125,7 +127,7 @@ var makeTree= function () {
 			s.lbp = bp;
 			symbol_table[id] = s;
 		}
-		//if (D) log("}fn:symbol() returning: ",s)
+		//if (D) console.log("}fn:symbol() returning: ",s)
 	 return s;
 	};
 
@@ -138,7 +140,7 @@ var makeTree= function () {
 			return this;
 		};
 		x.value = v;
-		//if (D) log("constant is ",x)
+		//if (D) console.log("constant is ",x)
 		return x;
 	};
 
@@ -187,6 +189,17 @@ var makeTree= function () {
 		return s;
 	};
 
+	var pathLed=function(left){
+		this.first=left
+		if (["(name)","*"].indexOf(token.id)<0)
+			SyntaxError("Expected an attribute name.")
+		if (token.id==="*")
+			token.arity="wildcard"
+		this.second=token
+		advance()
+		return this
+	}
+
 	//var stmt = function (s, f) {
 	//	var x = symbol(s);
 	//	x.std = f;
@@ -198,9 +211,9 @@ var makeTree= function () {
 	symbol("(literal)").nud = itself;
 	symbol("(root)").nud=itself
 	symbol("(current)").nud=itself
+	symbol("(context)").nud=itself
 	symbol(":");
 	//symbol(";");
-	symbol(")");
 	symbol(",");
 
 	constant("true", true);
@@ -221,6 +234,8 @@ var makeTree= function () {
 	infix("*", 120); infix("/", 120)
 	infix("%", 120)
 	prefix("-", 130); prefix("+", 130);
+	symbol(".",150).led=pathLed
+	symbol("..",150).led=pathLed
 
 	symbol("]")
 	infix("[", 150, function (left) {
@@ -232,25 +247,13 @@ var makeTree= function () {
 	});
 
 	symbol(")");
-	symbol("(", 150).led=function (left) {
+
+	//this is for built-in functions
+	symbol("(",150).led=function (left) {
 		var a = [];
 		this.arity = "binary";
 		this.first = left;
-		this.second = a;
-		//if ((left.arity !== "unary" || left.id !== "function") &&
-		//		left.arity !== "name" && left.id !== "(" &&
-		//		left.id !== "&&" && left.id !== "||" && left.id !== "?") {
-		//	left.error("Expected a variable name.");
-		//}
-		if (token.id !== ")") {
-			while (true) {
-				a.push(expression());
-				if (token.id !== ",") {
-						break;
-				}
-				advance(",");
-			}
-		}
+		this.second = expression();
 		advance(")");
 		return this;
 	}
@@ -262,7 +265,7 @@ var makeTree= function () {
 	}
 
 	symbol("[").led=function(left){
-		if (D) log("symbol([), left:",left)
+		if (D) console.log("symbol([), left:",left)
 		this.first=left
 		this.second=expression()
 		advance("]")
@@ -308,35 +311,21 @@ var makeTree= function () {
 		return this;
 	};
 
-	var pathLed=function(left){
-		this.first=left
-		if (["(name)","*"].indexOf(token.id)<0)
-			SyntaxError("Expected an attribute name.")
-		if (token.id==="*")
-			token.arity="wildcard"
-		this.second=token
-		advance()
-		return this
-	}
-
-	symbol(".",150).led=pathLed
-	symbol("..",150).led=pathLed
-
 	return function (arg) {
-		if (D) log("{fn:make_parse(",typeof(arg)!=='undefined'?arg:"",")")
+		if (D) console.log("{fn:make_parse(",typeof(arg)!=='undefined'?arg:"",")")
 		if (typeof arg==="string")
 			tokens = arg.tokens(D);
 		else
 			tokens=arg
-		if (D) log("tokens are: ",tokens)
+		if (D) console.log("tokens are: ",tokens)
 		token_nr = 0;
 		advance();
 		var s = expression();
 		advance("(end)");
-		if (D) log("}fn:make_parse() returning ",s)
+		if (D) console.log("}fn:make_parse() returning ",s)
 		return s;
 	};
 };
-
+//D=true
 var parse=makeTree()
 //console.log(parse("$..*[@._id>2]"))
