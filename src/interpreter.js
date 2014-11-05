@@ -1,11 +1,11 @@
-var objectPath=function(data,cfg){
+var ObjectPath=function(data,cfg){
 	this.exprCache=[]
 	this.log=console.log
 	this._init_(data,cfg)
 	return this
 }
 
-objectPath.prototype={
+ObjectPath.prototype={
 	D:false,
 	current:null,
 	data:null,
@@ -17,6 +17,15 @@ objectPath.prototype={
 			this.setDebug(cfg["debug"] || this.D)
 		}
 	},
+	setCurrent:function(c){
+		this.current=c
+	},
+	resetCurrent:function(){
+		this.current=null
+	},
+	setContext:function(c){
+		this.context=c
+	},
 	compile:function(expr){
 		if (this.exprCache.hasOwnProperty(expr))
 			return this.exprCache[expr]
@@ -25,7 +34,7 @@ objectPath.prototype={
 	},
 	setData:function(data){
 		if (["object","array"].indexOf(typeof data)<0){
-			log(data+" is not object nor array! Data not changed.")
+			clog(data+" is not object nor array! Data not changed.")
 			return data
 		}
 		this.data=data
@@ -173,6 +182,10 @@ objectPath.prototype={
 					if (D) self.log("op "+op+" found; returning with: ",self.current)
 					return self.current
 				}
+				case "(context)":{// self is @
+					if (D) self.log("op "+op+" found; returning with: ",self.context)
+					return self.context
+				}
 				case "(name)":{
 					return node.value
 				}
@@ -187,6 +200,8 @@ objectPath.prototype={
 						if (D) self.log("returning",r)
 						return r
 					} else if (node.arity==="op"){
+						//D=1
+						//log("TREE",this.tree)
 						if (D) self.log("selector found with op "+node.second.id)
 						var first=exe(node.first)
 						if (!first)
@@ -231,11 +246,28 @@ objectPath.prototype={
 					}
 					return null
 				}
+				case "(":{
+					if (D) log("first is: ",node.first.value)
+					switch (node.first.value) {
+						case "str":{
+							var snd=exe(node.second)
+							if (D) log("second is: ",snd)
+							if (typeof snd==="object") {
+								return JSON.stringify(snd)
+							}else{
+								return snd.toString
+							}
+							return
+						}
+					}
+					return null
+				}
 				case "{":
 				case "":{
 					throw {
 						error:"NotImplementedYet",
-						message:op+" is not implemented yet!"
+						message:op+" is not implemented yet!",
+						data:node
 					}
 				}
 				case "..":{
@@ -263,16 +295,29 @@ objectPath.prototype={
 						return null
 					}
 				}
+				case "fn":{
+					alert(222)
+				}
 			}
 			throw {
 				"error":"WrongOperator",
-				"message":"Operator "+op+" is not proper ObjectPath operator."
+				"message":"Operator "+op+" is not proper ObjectPath operator.",
+				data:node
 			}
-			return null
+			return
 		}
+		if (!expr) {
+			return expr
+		}
+		//log(expr)
 		if (typeof expr==="string")
 			tree=this.compile(expr)
-		var ret=exe(tree)
+		try{
+			//log(tree)
+			var ret=exe(tree)
+		}catch(e){
+			console.info("no data found in", expr, JSON.stringify(e,null,2))
+		}
 		if (this.D) this.log("}execute with:", ret)
 		return ret
 	}
