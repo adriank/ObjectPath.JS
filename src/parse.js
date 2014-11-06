@@ -71,7 +71,9 @@ var makeTree= function () {
 		token.position  = t.position;
 		token.value = v;
 		token.arity = a;
-		token.error = function(e){console.error(e)}
+		token.error = function(e){
+			console.error(e)
+		}
 		if (D) console.log("}fn:advance() returning token: ",token)
 		return token;
 	};
@@ -252,9 +254,24 @@ var makeTree= function () {
 	symbol("(",150).led=function (left) {
 		var a = [];
 		this.arity = "binary";
-		this.first = left;
-		this.second = expression();
+		this.id="fn"
+		this.first = left.value;
+		if (token.id !== ")") {
+			while (true) {
+				//if (token.arity !== "name") {
+				//	token.error("Expected a parameter name.");
+				//}
+				//scope.define(token);
+				a.push(token);
+				advance();
+				if (token.id !== ",") {
+					break;
+				}
+				advance(",");
+			}
+		}
 		advance(")");
+		this.second=a
 		return this;
 	}
 

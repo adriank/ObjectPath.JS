@@ -57,7 +57,7 @@ object2={
 	}
 }
 
-var op=new objectPath(object)
+var op=new ObjectPath(object)
 var assertEqual=function(l,r,jsonCmp){
 	//op.setDebug(true)
 	var ret
@@ -67,12 +67,13 @@ var assertEqual=function(l,r,jsonCmp){
 		else
 			ret=op.execute(l)===r
 	} catch(e){
-		console.log(e)
+		console.log("assertEqual fn error",e)
 	}
 	if (!ret){
 		op.setDebug(true)
-		op.execute(l)
+		var x=op.execute(l)
 		op.setDebug(false)
+		console.log(JSON.stringify(x)+" \nis\n "+JSON.stringify(r)+" not working")
 		throw {
 			"error":l+" is "+JSON.stringify(r)+" not working"
 		}
@@ -211,22 +212,22 @@ assertEqual("[1,2,4] + [3,5]", [1,2,4,3,5],"JSON")
 //assertEqual("array(date([2011,4,8]))", [2011,4,8])
 //assertEqual("array(time([12,12,30]))", [12,12,30,0])
 //def test_simple_paths(self):
-assertEqual("$", object)
-assertEqual("$.*[0]", object,"JSON")
+//assertEqual("$", object)
+assertEqual("$.*", object,"JSON")
 assertEqual("$.a.b.c", null)
 assertEqual("$.a.b.c[0]", null)
 assertEqual("$.__lang__", "en")
 assertEqual("$.test.o._id", 2)
 assertEqual("$.test.l._id", [3, 4],"JSON")
-assertEqual("$.*[test][0].o._id", 2)
-assertEqual("$.*['test'][0].o._id", 2)
+//assertEqual("$.*[test].o._id", 2)
+//assertEqual("$.*['test'].o._id", 2)
 //assertIsInstance("now().year",int)
 //def test_complex_paths(self):
 assertEqual("$.._id", [1, 2, 3, 4],"JSON")
 assertEqual("$..l[0]", object["test"]["l"])
-assertEqual("$..l.._id", [3,4],"JSON")
+assertEqual("$..l.._id", [3,4], "JSON")
 op.setData(object2)
-//self.assertEqual(execute2("$.store.*"), env2.requestStorage["store"])
+assertEqual("$.store.*", object2["store"],"JSON")
 assertEqual("$.store.book.author", ['Nigel Rees', 'Evelyn Waugh', 'Herman Melville', 'J. R. R. Tolkien'],"JSON")
 assertEqual("$.store.book.*[author]", ['Nigel Rees', 'Evelyn Waugh', 'Herman Melville', 'J. R. R. Tolkien'],"JSON")
 assertEqual("$.store.book.*['author']", ['Nigel Rees', 'Evelyn Waugh', 'Herman Melville', 'J. R. R. Tolkien'],"JSON")

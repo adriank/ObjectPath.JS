@@ -67,6 +67,13 @@ ObjectPath.prototype={
 		var exe=function(node){
 			var D=self.D
 			if (D) self.log("executing node", node)
+			if (Array.isArray(node)) {
+				var a=[]
+				for (var i=0;i<node.length;i++){
+					a.push(exe(node[i]))
+				}
+				return a
+			}
 			var op=node.id
 			if (["+","-","*","%","/",">",">=","<","<=","in","not in","is","is not"].indexOf(node.id)>=0){
 				var first=typeof node.first==="object" && node.first["id"]?exe(node.first):null,
@@ -277,8 +284,9 @@ ObjectPath.prototype={
 					var first=first || exe(node.first)
 					if (D) self.log("op "+op+" found")
 					if (node.second.id==="*"){
-						if (D) self.log("wildcard (*) found; returning",typeFirst==="array" && first || [first])
-						return Array.isArray(first) && first || [first]
+						if (D) self.log("wildcard (*) found; returning",first)
+						//return Array.isArray(first) && first || [first]
+						return first
 					} else if (first){
 						if (Array.isArray(first)){
 							var r=[]
@@ -296,13 +304,29 @@ ObjectPath.prototype={
 					}
 				}
 				case "fn":{
-					alert(222)
+					console.log(exe(node.second))
+					switch (node.first) {
+						case "replace":{
+							var [str,search,replacer]=exe(node.second)
+							return str.replace(new RegExp(search ,"g"),replacer)
+						}
+						case "split":{
+							var [str,splitter]=exe(node.second)
+							return str.split(splitter)
+						}
+					}
 				}
+				throw {
+					"error":"WrongFunction",
+					"message":"Function "+op+" is not proper ObjectPath function.",
+					"data":node
+				}
+
 			}
 			throw {
 				"error":"WrongOperator",
 				"message":"Operator "+op+" is not proper ObjectPath operator.",
-				data:node
+				"data":node
 			}
 			return
 		}
