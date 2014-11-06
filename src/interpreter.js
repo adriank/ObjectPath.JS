@@ -29,7 +29,7 @@ ObjectPath.prototype={
 	compile:function(expr){
 		if (this.exprCache.hasOwnProperty(expr))
 			return this.exprCache[expr]
-		var ret=this.exprCache[expr]=parse.call(this,expr)
+		var ret=this.exprCache[expr]=parse.call(this,expr,{"debug":this.D})
 		return ret
 	},
 	setData:function(data){
@@ -42,6 +42,7 @@ ObjectPath.prototype={
 	},
 	setDebug:function(enable){
 		this.D=enable
+		console.log(this.D)
 	},
 	flatten:function(fragment){
 		var ret=[]
@@ -63,7 +64,8 @@ ObjectPath.prototype={
 	execute:function(expr){
 		var self=this,
 				flatten=this.flatten,
-				simpleTypes=this.simpleTypes
+				simpleTypes=this.simpleTypes,
+				tree
 		var exe=function(node){
 			var D=self.D
 			if (D) self.log("executing node", node)
@@ -304,7 +306,6 @@ ObjectPath.prototype={
 					}
 				}
 				case "fn":{
-					console.log(exe(node.second))
 					switch (node.first) {
 						case "replace":{
 							var [str,search,replacer]=exe(node.second)
@@ -333,16 +334,16 @@ ObjectPath.prototype={
 		if (!expr) {
 			return expr
 		}
-		//log(expr)
+		if (this.D) console.log("{OP:execute(",expr,")")
 		if (typeof expr==="string")
 			tree=this.compile(expr)
-		try{
-			//log(tree)
+		if (this.D) console.log("tree is",tree)
+		//try{
 			var ret=exe(tree)
-		}catch(e){
-			console.info("no data found in", expr, JSON.stringify(e,null,2))
-		}
-		if (this.D) this.log("}execute with:", ret)
+		//}catch(e){
+			//console.info("no data found in", expr, JSON.stringify(e,null,2))
+		//}
+		if (this.D) this.log("}OP:execute with:", ret)
 		return ret
 	}
 }

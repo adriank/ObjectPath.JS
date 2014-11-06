@@ -9,7 +9,7 @@
 // Douglas Crockford
 // 2010-06-26
 
-var makeTree= function () {
+var makeTree=function() {
 	var D=false
 	if (this)
 		D=this.D
@@ -26,6 +26,7 @@ var makeTree= function () {
 	};
 
 	var advance = function (id) {
+		var D=self.D
 		var a, o, t, v;
 		if (D) console.log("{fn:advance("+(typeof(id)!=='undefined'?id:"")+")")
 		if (id && token.id !== id) {
@@ -39,7 +40,7 @@ var makeTree= function () {
 		token_nr += 1;
 		v = t.value;
 		a = t.type;
-		if (D) console.log("token",v,"type: ",a)
+		if (D) console.log("token is '",v,"', type: '",a,"'")
 		if (a === "name") {
 			if (FALSE.indexOf(v.toLowerCase())>=0) v="false"
 			if (TRUE.indexOf(v.toLowerCase())>=0) v="true"
@@ -79,6 +80,7 @@ var makeTree= function () {
 	};
 
 	var expression = function (rbp) {
+		var D=this.D
 		if (D) console.log("{fn:expression("+(typeof(rbp)!=='undefined'?rbp:"")+")")
 		var left;
 		var t = token;
@@ -100,7 +102,7 @@ var makeTree= function () {
 	};
 
 	var block = function () {
-		if (D) console.log("fn:block()")
+		if (this.D) console.log("fn:block()")
 		var t = token;
 		advance("{");
 		return t.std();
@@ -116,7 +118,8 @@ var makeTree= function () {
 	};
 
 	var symbol = function (id, bp) {
-		//if (D) console.log("{fn:symbol("+id,", "+bp+")")
+		var D=this.D
+		if (D) console.log("{fn:symbol("+id,", "+bp+")")
 		var s = symbol_table[id];
 		bp = bp || 0;
 		if (s) {
@@ -129,7 +132,7 @@ var makeTree= function () {
 			s.lbp = bp;
 			symbol_table[id] = s;
 		}
-		//if (D) console.log("}fn:symbol() returning: ",s)
+		if (D) console.log("}fn:symbol() returning: ",s)
 	 return s;
 	};
 
@@ -258,12 +261,7 @@ var makeTree= function () {
 		this.first = left.value;
 		if (token.id !== ")") {
 			while (true) {
-				//if (token.arity !== "name") {
-				//	token.error("Expected a parameter name.");
-				//}
-				//scope.define(token);
-				a.push(token);
-				advance();
+				a.push(expression());
 				if (token.id !== ",") {
 					break;
 				}
@@ -328,7 +326,8 @@ var makeTree= function () {
 		return this;
 	};
 
-	return function (arg) {
+	return function (arg,conf) {
+		var D=this.D=conf && conf["debug"] || false
 		if (D) console.log("{fn:make_parse(",typeof(arg)!=='undefined'?arg:"",")")
 		if (typeof arg==="string")
 			tokens = arg.tokens(D);
