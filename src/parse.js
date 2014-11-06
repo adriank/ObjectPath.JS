@@ -230,7 +230,8 @@ var makeTree=function() {
 
 	infixr("or", 30);
 	infixr("and", 40);
-	prefix("not", 50)
+	prefix("not", 50);
+	infix(":",120);
 	infix("in", 60); infix("not in", 60)
 	infix("is", 60); infix("is not",60)
 	infix("<", 60); infix("<=", 60)
@@ -244,12 +245,38 @@ var makeTree=function() {
 
 	symbol("]")
 	infix("[", 150, function (left) {
-			this.first = left;
-			this.second = expression(0);
-			this.arity = "binary";
-			advance("]");
-			return this;
+		this.first = left;
+		this.second = expression(0);
+		this.arity = "binary";
+		advance("]");
+		return this;
 	});
+
+	symbol("[").led=function(left){
+		if (D) console.log("symbol([), left:",left)
+		this.first=left
+		this.second=expression()
+		advance("]")
+		return this
+	}
+
+	// arrays like [1,2,3,4]
+	symbol("[").nud=function () {
+		var a = [];
+		if (token.id !== "]") {
+			while (true) {
+				a.push(expression());
+				if (token.id !== ",") {
+						break;
+				}
+				advance(",");
+			}
+		}
+		advance("]");
+		this.first = a;
+		this.arity = "unary";
+		return this;
+	}
 
 	symbol(")");
 
@@ -277,31 +304,6 @@ var makeTree=function() {
 		var e = expression();
 		advance(")");
 		return e;
-	}
-
-	symbol("[").led=function(left){
-		if (D) console.log("symbol([), left:",left)
-		this.first=left
-		this.second=expression()
-		advance("]")
-		return this
-	}
-
-	symbol("[").nud=function () {
-		var a = [];
-		if (token.id !== "]") {
-			while (true) {
-				a.push(expression());
-				if (token.id !== ",") {
-						break;
-				}
-				advance(",");
-			}
-		}
-		advance("]");
-		this.first = a;
-		this.arity = "unary";
-		return this;
 	}
 
 	symbol("}");

@@ -58,7 +58,7 @@ String.prototype.tokens=function(D){
 		var expression=this
 
 		var prefix = '<>.';
-		var operators='+-*/%<>'+'[,]'+'{}:'+'()'
+		var operators='+-*/%<>:'+'[,]'+'{}:'+'()'
 		var root='$'
 		var context='!'
 		var current='@'
@@ -306,10 +306,12 @@ String.prototype.tokens=function(D){
 	            result.push(make('(current)', c));
 						else if (c===context)
 	            result.push(make('(context)', c));
-						else if (operators.indexOf(c) >= 0)
+						else if (operators.indexOf(c) >= 0){
 	            result.push(make('op', c));
-						else
+						}
+						else{
 							make('op', c, c+" is not an ObjectPath operator!")
+						}
             c = this.charAt(i);
         }
     }

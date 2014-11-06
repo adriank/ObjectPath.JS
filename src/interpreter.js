@@ -34,15 +34,15 @@ ObjectPath.prototype={
 	},
 	setData:function(data){
 		if (["object","array"].indexOf(typeof data)<0){
-			clog(data+" is not object nor array! Data not changed.")
+			this.log(data+" is not object nor array! Data not changed.")
 			return data
 		}
 		this.data=data
 		return data
 	},
 	setDebug:function(enable){
-		this.D=enable
-		console.log(this.D)
+		// this.D=enable
+		console.log("debugging",this.D?"enabled":"disabled")
 	},
 	flatten:function(fragment){
 		var ret=[]
@@ -195,6 +195,9 @@ ObjectPath.prototype={
 					if (D) self.log("op "+op+" found; returning with: ",self.context)
 					return self.context
 				}
+				case ":":{
+					return node
+				}
 				case "(name)":{
 					return node.value
 				}
@@ -209,8 +212,6 @@ ObjectPath.prototype={
 						if (D) self.log("returning",r)
 						return r
 					} else if (node.arity==="op"){
-						//D=1
-						//log("TREE",this.tree)
 						if (D) self.log("selector found with op "+node.second.id)
 						var first=exe(node.first)
 						if (!first)
@@ -218,8 +219,18 @@ ObjectPath.prototype={
 						if (Array.isArray(first)){
 							var second=exe(node.second),
 									typeSecond=typeof second
-							if (D) self.log("left is",first,"right is",second)
+							if (second && second.id===":") {
+							if (D) console.log("slice operator found")
+								//var [s,f]=[exe(second.first),exe(second.second)]
+								return first.slice(exe(second.first),exe(second.second))
+							}
+							if (D) console.log("left is",first,"right is",second)
 							if (typeSecond==="number"){
+								if (second===-1) {
+									return first.slice(-1)[0]
+								} else if (second<0) {
+									return first.slice(second,second+1)[0]
+								}
 								return first[second]
 							} else if (typeSecond==="string"){
 								var r=[]
@@ -309,11 +320,17 @@ ObjectPath.prototype={
 					switch (node.first) {
 						case "replace":{
 							var [str,search,replacer]=exe(node.second)
-							return str.replace(new RegExp(search ,"g"),replacer)
+							if (str) {
+								return str.replace(new RegExp(search ,"g"),replacer)
+							}
+							return ""
 						}
 						case "split":{
 							var [str,splitter]=exe(node.second)
-							return str.split(splitter)
+							if (str) {
+								return str.split(splitter)
+							}
+							return ""
 						}
 					}
 				}
