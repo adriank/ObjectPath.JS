@@ -1,6 +1,5 @@
 var ObjectPath=function(data,cfg){
 	this.exprCache=[]
-	this.log=console.log
 	this._init_(data,cfg)
 	return this
 }
@@ -41,7 +40,7 @@ ObjectPath.prototype={
 		return data
 	},
 	setDebug:function(enable){
-		// this.D=enable
+		this.D=enable
 		console.log("debugging",this.D?"enabled":"disabled")
 	},
 	flatten:function(fragment){
@@ -68,7 +67,7 @@ ObjectPath.prototype={
 				tree
 		var exe=function(node){
 			var D=self.D
-			if (D) self.log("executing node", node)
+			if (D) console.log("executing node", node)
 			if (Array.isArray(node)) {
 				var a=[]
 				for (var i=0;i<node.length;i++){
@@ -85,12 +84,12 @@ ObjectPath.prototype={
 			}
 			switch (op){
 				case "(literal)": {
-					if (D) self.log("op "+op+" found")
+					if (D) console.log("op "+op+" found")
 					return node.value
 				}
 				case "+":{
-					if (D) self.log("op "+op+" found; first is",first,"second is",second)
-					//if (D) log(typeFirst)
+					if (D) console.log("op "+op+" found; first is",first,"second is",second)
+					//if (D) console.log(typeFirst)
 					if (typeFirst==='number' && typeSecond!=="number")
 						second=parseInt(second)
 					else if (Array.isArray(first)){
@@ -100,36 +99,36 @@ ObjectPath.prototype={
 							first.push(second)
 						}
 					}
-					if (D) self.log("returning",first+second)
+					if (D) console.log("returning",first+second)
 					return first+second
 				}
 				case "-":{
-					if (D) self.log("op "+op+" found; returning: ",first-second)
+					if (D) console.log("op "+op+" found; returning: ",first-second)
 					if (!second)
 						return -first
 					return first-second
 				}
 				case "*":{
 					if (node.arity!="wildcard"){
-						if (D) self.log("op "+op+" found; returning: ",first*second)
+						if (D) console.log("op "+op+" found; returning: ",first*second)
 						return first*second
 					}
 					else{
 						//TODO this is executed only because precomputation of first
-						//if (D) self.log("wildcard "+op+" found; returning: ",node.first)
+						//if (D) console.log("wildcard "+op+" found; returning: ",node.first)
 						return null
 					}
 				}
 				case "%":{
-					if (D) self.log("op "+op+" found; returning: ",first%second)
+					if (D) console.log("op "+op+" found; returning: ",first%second)
 					return first%second
 				}
 				case "/":{
-					if (D) self.log("op "+op+" found; returning: ",first/second)
+					if (D) console.log("op "+op+" found; returning: ",first/second)
 					return first/second
 				}
 				case ">":{
-					if (D) self.log("op "+op+" found; returning: ",first>second)
+					if (D) console.log("op "+op+" found; returning: ",first>second)
 					return first>second
 				}
 				case "<":{
@@ -152,7 +151,7 @@ ObjectPath.prototype={
 				}
 				case "in":
 				case "not in":{
-					if (D) self.log("op "+op+" found; doing",first,op,second)
+					if (D) console.log("op "+op+" found; doing",first,op,second)
 					var ret=null
 					if (typeSecond==="string")
 						ret=second.search(first.toString())>=0
@@ -165,34 +164,34 @@ ObjectPath.prototype={
 				case "is":
 				case "is not":{
 					var ret=null
-					if (D) self.log("op '"+op+"' found; doing",first,op,second)
+					if (D) console.log("op '"+op+"' found; doing",first,op,second)
 					if (simpleTypes.indexOf(typeFirst)>=0){
-						if (D) self.log("doing simple type comparison:",first,"is",second," = ",(first==second))
+						if (D) console.log("doing simple type comparison:",first,"is",second," = ",(first==second))
 						ret=first==second
 					}
 					else if (typeFirst==="array" || typeFirst==="object"){
 						//TODO needs(!) better algorithm
-						if (D) self.log("doing JSON comparison: ",first," is ",second)
+						if (D) console.log("doing JSON comparison: ",first," is ",second)
 						try{
 							ret=JSON.stringify(first)==JSON.stringify(second)
 							throw {
 								name:"comparison Error",
-								message: "JSONStringifyNotAvailable. Your web browser doesn't support JSON.stringify(). Vote for support at",
+								message: "JSONStringifyNotAvailable. Your web browser doesn't support JSON.stringify(). Vote for support at"
 							}
 						} catch(e){}
 					}
 					return op==="is"?ret:!ret
 				}
 				case "(root)":{// self is $
-					if (D) self.log("op "+op+" found; returning with: ",self.data)
+					if (D) console.log("op "+op+" found; returning with: ",self.data)
 					return self.data
 				}
 				case "(current)":{// self is @
-					if (D) self.log("op "+op+" found; returning with: ",self.current)
+					if (D) console.log("op "+op+" found; returning with: ",self.current)
 					return self.current
 				}
 				case "(context)":{// self is @
-					if (D) self.log("op "+op+" found; returning with: ",self.context)
+					if (D) console.log("op "+op+" found; returning with: ",self.context)
 					return self.context
 				}
 				case ":":{
@@ -203,16 +202,16 @@ ObjectPath.prototype={
 				}
 				case "[":{
 					if (node.arity==="unary"){
-						if (D) self.log("array found")
-						//self.log(node)
+						if (D) console.log("array found")
+						//console.log(node)
 						var r=[]
 						for (i in node.first){
 							r.push(exe(node.first[i]))
 						}
-						if (D) self.log("returning",r)
+						if (D) console.log("returning",r)
 						return r
 					} else if (node.arity==="op"){
-						if (D) self.log("selector found with op "+node.second.id)
+						if (D) console.log("selector found with op "+node.second.id)
 						var first=exe(node.first)
 						if (!first)
 							return first
@@ -238,11 +237,11 @@ ObjectPath.prototype={
 									if (first[i][second])
 										r.push(first[i][second])
 								}
-								if (D) self.log("returning",r)
+								if (D) console.log("returning",r)
 								return r
 							} else if (typeof node.second==="object" && self.SELECTOR_OPS.indexOf(node.second.id)>=0){
 								var selector=node.second
-								if (D) self.log("found ",selector.id," operator in selector")
+								if (D) console.log("found ",selector.id," operator in selector")
 								var r=[],
 										o=Object.create(selector)
 								for (i in first){
@@ -256,9 +255,9 @@ ObjectPath.prototype={
 							}
 							programmingError("left is array and right is not number")
 						} else if (typeFirst==="object"){
-							if (D) self.log("left is"+first+"right is",second)
+							if (D) console.log("left is"+first+"right is",second)
 							if (node.second.id==="(name)" || typeSecond==="string"){
-								if (D) self.log("returning ",first,second,first[second])
+								if (D) console.log("returning ",first,second,first[second])
 									return first[second]
 							}
 						}
@@ -267,17 +266,16 @@ ObjectPath.prototype={
 					return null
 				}
 				case "(":{
-					if (D) log("first is: ",node.first.value)
+					if (D) console.log("first is: ",node.first.value)
 					switch (node.first.value) {
 						case "str":{
 							var snd=exe(node.second)
-							if (D) log("second is: ",snd)
+							if (D) console.log("second is: ",snd)
 							if (typeof snd==="object") {
 								return JSON.stringify(snd)
 							}else{
 								return snd.toString
 							}
-							return
 						}
 					}
 					return null
@@ -295,9 +293,9 @@ ObjectPath.prototype={
 				}
 				case ".":{
 					var first=first || exe(node.first)
-					if (D) self.log("op "+op+" found")
+					if (D) console.log("op "+op+" found")
 					if (node.second.id==="*"){
-						if (D) self.log("wildcard (*) found; returning",first)
+						if (D) console.log("wildcard (*) found; returning",first)
 						//return Array.isArray(first) && first || [first]
 						return first
 					} else if (first){
@@ -308,7 +306,7 @@ ObjectPath.prototype={
 								if (first[i][second])
 								 	r.push(first[i][second])
 							}
-							if (D) self.log("returning",r)
+							if (D) console.log("returning",r)
 							return r
 						}
 						return first[node.second.value]
@@ -319,16 +317,16 @@ ObjectPath.prototype={
 				case "fn":{
 					switch (node.first) {
 						case "replace":{
-							var [str,search,replacer]=exe(node.second)
-							if (str) {
-								return str.replace(new RegExp(search ,"g"),replacer)
+							var r=exe(node.second)
+							if (r[0]) {
+								return r[0].replace(new RegExp(r[1] ,"g"),r[2])
 							}
 							return ""
 						}
 						case "split":{
-							var [str,splitter]=exe(node.second)
-							if (str) {
-								return str.split(splitter)
+							var r=exe(node.second)
+							if (r[0]) {
+								return r[0].split(r[1])
 							}
 							return ""
 						}
@@ -346,7 +344,6 @@ ObjectPath.prototype={
 				"message":"Operator "+op+" is not proper ObjectPath operator.",
 				"data":node
 			}
-			return
 		}
 		if (!expr) {
 			return expr
@@ -360,7 +357,7 @@ ObjectPath.prototype={
 		//}catch(e){
 			//console.info("no data found in", expr, JSON.stringify(e,null,2))
 		//}
-		if (this.D) this.log("}OP:execute with:", ret)
+		if (this.D) console.log("}OP:execute with:", ret)
 		return ret
 	}
 }
