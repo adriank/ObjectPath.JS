@@ -316,6 +316,7 @@ ObjectPath.prototype={
 				}
 				case "fn":{
 					switch (node.first) {
+						//String functions
 						case "replace":{
 							var r=exe(node.second)
 							if (r[0]) {
@@ -329,6 +330,13 @@ ObjectPath.prototype={
 								return r[0].split(r[1])
 							}
 							return ""
+						}
+						// array functions
+						case "max":{
+							return Math.max.apply(null, exe(node.second)[0])
+						}
+						case "min":{
+							return Math.min.apply(null, exe(node.second)[0])
 						}
 					}
 				}
