@@ -215,7 +215,7 @@ ObjectPath.prototype={
 						var first=exe(node.first)
 						if (!first)
 							return first
-						if (Array.isArray(first)){
+						if (typeof first==="string" || Array.isArray(first)){
 							var second=exe(node.second),
 									typeSecond=typeof second
 							if (second && second.id===":") {
