@@ -316,6 +316,24 @@ ObjectPath.prototype={
 				}
 				case "fn":{
 					switch (node.first) {
+						//Casting functions
+						case "float":
+						case "int":{
+							return parseFloat(exe(node.second))
+						}
+						case "str":{
+							return exe(node.second).toString()
+						}
+						case "array":{
+							var snd=exe(node.second)
+							if (Array.isArray(snd[0])) {
+								return snd[0]
+							}
+							if (typeof snd[0] === "string") {
+								return snd[0].split('')
+							}
+							return []
+						}
 						//String functions
 						case "replace":{
 							var r=exe(node.second)
@@ -323,6 +341,10 @@ ObjectPath.prototype={
 								return r[0].replace(new RegExp(r[1] ,"g"),r[2])
 							}
 							return ""
+						}
+						case "join":{
+							var r=exe(node.second)
+							return r[0].join(r[1])
 						}
 						case "split":{
 							var r=exe(node.second)

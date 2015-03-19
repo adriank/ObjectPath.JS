@@ -62,8 +62,10 @@ var assertEqual=function(l,r,jsonCmp){
 	//op.setDebug(true)
 	var ret
 	try{
-		if (jsonCmp)
+		if (jsonCmp){
+			//console.log(222,JSON.stringify(op.execute(l)))
 			ret=JSON.stringify(op.execute(l))===JSON.stringify(r)
+		}
 		else
 			ret=op.execute(l)===r
 	} catch(e){
@@ -73,12 +75,12 @@ var assertEqual=function(l,r,jsonCmp){
 		op.setDebug(true)
 		var x=op.execute(l)
 		op.setDebug(false)
-		console.log(JSON.stringify(x)+" \nis\n "+JSON.stringify(r)+" not working")
+		console.log(JSON.stringify(x)," \nis\n",JSON.stringify(r),"not working")
 		throw {
-			"error":l+" is "+JSON.stringify(r)+" not working"
+			"error": l+" is "+JSON.stringify(r)+" not working"
 		}
 	}
-	console.log("testing "+l+" is "+JSON.stringify(r)," -> OK")
+	console.log("testing",l,"is",JSON.stringify(r),"-> OK")
 }
 
 //simpleType tests
@@ -191,26 +193,33 @@ assertEqual("'5'+5", '55')
 assertEqual("5+'5'", 10)
 assertEqual("[1,2,4] + [3,5]", [1,2,4,3,5],"JSON")
 //assertEqual('{"a":1,"b":2} + {"a":2,"c":3}', {"a":2,"b":2,"c":3})
+
 //def test_builtin_casting(self):
-//assertEqual("str('foo')", 'foo')
-//assertEqual("str(1)", '1')
+assertEqual("str('foo')", 'foo')
+assertEqual("str(1)", '1')
+//JS doesn't have a '1.0' notation
 //assertEqual("str(1.0)", '1.0')
-//assertEqual("str(1 is 1)"), 'true')
-//assertEqual("int(1)", 1)
+assertEqual("str(1 is 1)", 'true')
+assertEqual("int(1)", 1)
+//JS doesn't have a '1.0' notation
 //assertEqual("int(1.0)", 1)
-//assertEqual("int('1')", 1)
+assertEqual("int('1')", 1)
 //#Python can't handle that
-//#assertEqual("int('1.0')", 1)
-//assertEqual("float(1.0)", 1.0)
-//assertEqual("float(1)", 1.0)
-//assertEqual("float('1')", 1.0)
-//assertEqual("float('1.0')", 1.0)
-//assertEqual("array()", [])
-//assertEqual("array([])", [])
-//assertEqual("array('abc')", ['a','b','c'])
+assertEqual("int('1.0')", 1)
+assertEqual("float(1.0)", 1)
+assertEqual("float(1)", 1)
+assertEqual("float('1')", 1)
+assertEqual("float('1.0')", 1)
+assertEqual("array()", [],"JSON")
+assertEqual("array([])", [],"JSON")
+assertEqual("array('abc')", ['a','b','c'],"JSON")
 //assertEqual("array(dateTime([2011,4,8,12,0]))", [2011,4,8,12,0,0,0])
 //assertEqual("array(date([2011,4,8]))", [2011,4,8])
 //assertEqual("array(time([12,12,30]))", [12,12,30,0])
+
+//def test_misc_fns(self):
+assertEqual("join([1,2,3],'a')", "1a2a3")
+
 //def test_simple_paths(self):
 //assertEqual("$", object)
 assertEqual("$.*", object,"JSON")
@@ -222,6 +231,7 @@ assertEqual("$.test.l._id", [3, 4],"JSON")
 //assertEqual("$.*[test].o._id", 2)
 //assertEqual("$.*['test'].o._id", 2)
 //assertIsInstance("now().year",int)
+
 //def test_complex_paths(self):
 assertEqual("$.._id", [1, 2, 3, 4],"JSON")
 assertEqual("$..l[0]", object["test"]["l"])
