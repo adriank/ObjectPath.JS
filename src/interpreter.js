@@ -344,7 +344,11 @@ ObjectPath.prototype={
 						}
 						case "join":{
 							var r=exe(node.second)
-							return r[0].join(r[1])
+							try{
+								return r[0].join(r[1])
+							} catch (e){
+								return null
+							}
 						}
 						case "split":{
 							var r=exe(node.second)

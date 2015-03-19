@@ -219,6 +219,7 @@ assertEqual("array('abc')", ['a','b','c'],"JSON")
 
 //def test_misc_fns(self):
 assertEqual("join([1,2,3],'a')", "1a2a3")
+assertEqual("join($.aaa,'a')", null)
 
 //def test_simple_paths(self):
 //assertEqual("$", object)
