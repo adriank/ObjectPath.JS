@@ -71,4 +71,4 @@ Just make pull-request. I don't require signing a Contributor License here:).
 License
 -------
 
-Currently under [AGPL](http://choosealicense.com/licenses/). To make it short: if you make any change to the code, give changes back to community.
+Under [BSD](http://choosealicense.com/licenses/).
